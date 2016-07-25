@@ -1,0 +1,14 @@
+env:
+  protocol: https
+  domain: run.aws-usw02-pr.ice.predix.io
+  SPRING_PROFILES_ACTIVE: cloud
+  MEMORY_LIMIT: 1G
+
+applications:
+- name: apm-ext-microservice-team26
+  memory: 2G
+  instances: 4
+  path: ./target/apm-ext-microservice-0.1.0.jar
+  timeout: 180
+  services:
+  - apm-services
