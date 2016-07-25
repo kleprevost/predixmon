@@ -37,13 +37,13 @@ else {
   assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
 }
 
-//app.use(serveStatic('public'));
+app.use(serveStatic('public'));
 function setCacheControl(res, path) {
     res.setHeader('Cache-Control', 'public, max-age=604800');
 }
-app.use('/', serveStatic('public', {
-	setHeaders: setCacheControl
-}));
+//app.use('/', serveStatic('public', {
+	//setHeaders: setCacheControl
+//}));
 
 // Note: If you're not running behind an app hub, you'll need to add an
 //       'Authorization' and tenant headers to any authenticated service requests.

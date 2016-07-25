@@ -3,21 +3,9 @@ class apmSampleAppCtrl {
     $rootScope.tenantInfo = null;
     $rootScope.userPreferenceForAssetName = null;
     $scope.assets = getAssets;
+    $scope.selected = "tab1";
 
-    console.log('getAssets::', getAssets)
-
-        /*$scope.getData = function () {
-
-            ApmSampleAppService.getAssets()
-                .then(function (result) {
-                    $scope.assets = result;
-                }, function (data, status) {
-                    console.log("Error fetching data:", status);
-                });
-        };
-
-       $scope.getData();*/
-
+    //console.log('getAssets::', getAssets)
   }
 }
 
