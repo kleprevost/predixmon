@@ -1,0 +1,35 @@
+<dom-module id="poke-tabs">
+    <template strip-whitespace>
+      <px-tab-set id="tab-set-bare" noBottomBorder selected={{selected}}>
+        <px-tab id="map">Map</px-tab>
+        <px-tab id="grid">Grid</px-tab>
+      </px-tab-set>
+
+      <px-tab-pages selected="{{selected}}">
+        <content>
+      </px-tab-pages>
+
+    </template>
+</dom-module>
+
+<script>
+
+        Polymer({
+            is: 'poke-tabs',
+            /**
+             * Properties block, expose attribute values to the DOM via 'reflect'
+             *
+             * @property properties
+             * @type Object
+             */
+            properties: {
+                selected: {
+                    type: String,
+                    notify: true
+                }
+            }
+        })
+
+
+</script>
+
