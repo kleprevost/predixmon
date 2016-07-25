@@ -42,6 +42,9 @@ let ApmSampleAppModule = angular.module('ApmSampleAppModule', [
           getAssets: ['ApmSampleAppService', function(ApmSampleAppService) {
             return ApmSampleAppService.getAssets();
           }]
+          getAssets: ['ApmSampleAppService', function(ApmSampleAppService) {
+            return ApmSampleAppService.getLat();
+          }]
         }
       });
   }]);
