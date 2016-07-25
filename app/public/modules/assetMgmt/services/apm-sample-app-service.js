@@ -24,6 +24,48 @@ class ApmSampleAppService {
             return deferred.promise;
         }
 
+    getLong() {
+            var deferred = this.$q.defer();
+            this.$http({
+                url: apmSampleServiceBaseUrl + '/long',
+                method: 'GET',
+                cache: false
+            }).success(function (data) {
+                deferred.resolve(data);
+            }).error(function (data, status) {
+                deferred.reject('Error fetching assets');
+            });
+            return deferred.promise;
+        }
+
+    getLat() {
+            var deferred = this.$q.defer();
+            this.$http({
+                url: apmSampleServiceBaseUrl + '/lat',
+                method: 'GET',
+                cache: false
+            }).success(function (data) {
+                deferred.resolve(data);
+            }).error(function (data, status) {
+                deferred.reject('Error fetching assets');
+            });
+            return deferred.promise;
+        }
+
+    getID() {
+            var deferred = this.$q.defer();
+            this.$http({
+                url: apmSampleServiceBaseUrl + '/id',
+                method: 'GET',
+                cache: false
+            }).success(function (data) {
+                deferred.resolve(data);
+            }).error(function (data, status) {
+                deferred.reject('Error fetching assets');
+            });
+            return deferred.promise;
+        }
+
     static serviceFactory($http, $q, $rootScope) {
         ApmSampleAppService.instance = new ApmSampleAppService($http, $q, $rootScope);
         return ApmSampleAppService.instance;
