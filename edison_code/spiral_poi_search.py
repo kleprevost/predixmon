@@ -9,6 +9,9 @@ import logging
 import requests
 import argparse
 import pprint
+import requests
+import datetime
+import time
 from pgoapi import PGoApi
 from pgoapi.utilities import f2i, h2f
 from pgoapi import utilities as util
@@ -16,7 +19,33 @@ from google.protobuf.internal import encoder
 from geopy.geocoders import GoogleV3
 from s2sphere import Cell, CellId, LatLng
 
+# Setting up some logging up in this bish
 log = logging.getLogger(__name__)
+
+
+# Let's get some important things from the environment
+
+PTC_USERNAME = os.environ.get('PTC_USERNAME')
+PTC_PASSWORD = os.environ.get('PTC_PASSWORD')
+LOCATION = '3708 S Las Vegas Blvd, Las Vegas, NV 89109'
+ASSET_ID = 'Cosmopolitan'
+INGEST_URL = 'https://apm-timeseries-services-hackapm.run.aws-usw02-pr.ice.predix.io/v2/time_series'
+TENANT_ID = '8B8039C92C3E4EDFAB97CE576492D70C'
+headers = {
+    'authorization': "bearer eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiIxYjVmYjY1MC0wZjI3LTRmMzktYTI5OC1iOTlhZTZmZjk1MjUiLCJzdWIiOiIwYWVjYmRiZi1jOGMzLTRiNjItYmM5Yy01ZjE2ZDhlYzNkZTciLCJzY29wZSI6WyJwYXNzd29yZC53cml0ZSIsIm9wZW5pZCJdLCJjbGllbnRfaWQiOiJpbmdlc3Rvci45Y2YzM2NlMzdiZjY0YzU2ODFiNTE1YTZmNmFhZGY0NyIsImNpZCI6ImluZ2VzdG9yLjljZjMzY2UzN2JmNjRjNTY4MWI1MTVhNmY2YWFkZjQ3IiwiYXpwIjoiaW5nZXN0b3IuOWNmMzNjZTM3YmY2NGM1NjgxYjUxNWE2ZjZhYWRmNDciLCJncmFudF90eXBlIjoicGFzc3dvcmQiLCJ1c2VyX2lkIjoiMGFlY2JkYmYtYzhjMy00YjYyLWJjOWMtNWYxNmQ4ZWMzZGU3Iiwib3JpZ2luIjoidWFhIiwidXNlcl9uYW1lIjoicG9rZW1vbiIsImVtYWlsIjoiZGF2aWQuc3RlaW5iZXJnZXJAZ2UuY29tIiwiYXV0aF90aW1lIjoxNDY5NDIzNTIzLCJyZXZfc2lnIjoiYmRiZTQ5YWYiLCJpYXQiOjE0Njk0MjM1MjMsImV4cCI6MTQ2OTUwOTkyMywiaXNzIjoiaHR0cHM6Ly9kOWVmMTA2Yy03MDQ4LTQ4NmUtYTc5Zi05YzgwODI3YjhhMTQucHJlZGl4LXVhYS5ydW4uYXdzLXVzdzAyLXByLmljZS5wcmVkaXguaW8vb2F1dGgvdG9rZW4iLCJ6aWQiOiJkOWVmMTA2Yy03MDQ4LTQ4NmUtYTc5Zi05YzgwODI3YjhhMTQiLCJhdWQiOlsiaW5nZXN0b3IuOWNmMzNjZTM3YmY2NGM1NjgxYjUxNWE2ZjZhYWRmNDciLCJwYXNzd29yZCIsIm9wZW5pZCJdfQ.lFD6bHFJXuZH2Awxatp1MvHVDUHNTUpTckrXNASWeYfz6GV5DDWe9WIGYzTyTrN5UiaFi95MwzVrNR9OGh59VAQ-vvBpo5G7WlG8HILJHhBPgMSXSYtNf4qgMzwHPay5RqVmurZVZ8D4xiy9ZBWOSCZqnOtIEt25VA_hMhI8wPvXGHkU79YqbpLpyco6WACQ-IxrfVRB1EJvZnoZz4JIG84iDrfbt4pVPhbSYvrJ_kzyRX71NcYhNcED4dNYEftCQxxUBHkOcuXxcpAvJWJSEeaQAjELQ6LU7hMO5HmPc0Ztip2yl-2n0etL-0V73ly0udAZdmqb4Wm65QvsBHlDmg",
+    'tenant': "8B8039C92C3E4EDFAB97CE576492D70C",
+    'content-type': "application/json",
+    'accept': "application/json",
+    'cache-control': "no-cache",
+    }
+
+
+
+def post_data(payload):
+    r = requests.post(INGEST_URL, headers=headers, data=payload)
+    bob = r.status_code
+    print bob
+ 
 
 def get_pos_by_name(location_name):
     geolocator = GoogleV3()
@@ -50,100 +79,31 @@ def encode(cellid):
     encoder._VarintEncoder()(output.append, cellid)
     return ''.join(output)
 
-def init_config():
-    parser = argparse.ArgumentParser()
-    config_file = "config.json"
-
-    # If config file exists, load variables from json
-    load   = {}
-    if os.path.isfile(config_file):
-        with open(config_file) as data:
-            load.update(json.load(data))
-
-    # Read passed in Arguments
-    required = lambda x: not x in load
-    parser.add_argument("-a", "--auth_service", help="Auth Service ('ptc' or 'google')",
-        required=required("auth_service"))
-    parser.add_argument("-u", "--username", help="Username", required=required("username"))
-    parser.add_argument("-p", "--password", help="Password", required=required("password"))
-    parser.add_argument("-l", "--location", help="Location", required=required("location"))
-    parser.add_argument("-d", "--debug", help="Debug Mode", action='store_true')
-    parser.add_argument("-t", "--test", help="Only parse the specified location", action='store_true')
-    parser.set_defaults(DEBUG=False, TEST=False)
-    config = parser.parse_args()
-
-    # Passed in arguments shoud trump
-    for key in config.__dict__:
-        if key in load and config.__dict__[key] == None:
-            config.__dict__[key] = load[key]
-
-    if config.auth_service not in ['ptc', 'google']:
-      log.error("Invalid Auth service specified! ('ptc' or 'google')")
-      return None
-
-    return config
-
 def main():
-    # log settings
-    # log format
-    #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
-    # log level for http request class
-    #logging.getLogger("requests").setLevel(logging.WARNING)
-    # log level for main pgoapi class
-    #logging.getLogger("pgoapi").setLevel(logging.INFO)
-    # log level for internal pgoapi class
-    #logging.getLogger("rpc_api").setLevel(logging.INFO)
-
-    config = init_config()
-    if not config:
-        return
-
-    if config.debug:
-        logging.getLogger("requests").setLevel(logging.DEBUG)
-        logging.getLogger("pgoapi").setLevel(logging.DEBUG)
-        logging.getLogger("rpc_api").setLevel(logging.DEBUG)
-
-    position = get_pos_by_name(config.location)
-    if not position:
-        return
         
-    if config.test:
-        return
-
     # instantiate pgoapi
     api = PGoApi()
-
+    position = get_pos_by_name(LOCATION)
     # provide player position on the earth
     api.set_position(*position)
 
-    if not api.login(config.auth_service, config.username, config.password):
+    if not api.login('ptc', PTC_USERNAME, PTC_PASSWORD):
         return
-
-    # chain subrequests (methods) into one RPC call
-
-    # get player profile call
-    # ----------------------
-    api.get_player()
-
     # execute the RPC call
     response_dict = api.call()
 
-    # apparently new dict has binary data in it, so formatting it with this method no longer works, pprint works here but there are other alternatives    
-    # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
-    print('Response dictionary: \n\r{}'.format(pprint.PrettyPrinter(indent=4).pformat(response_dict)))
-    find_poi(api, position[0], position[1])
+    pokemon_json = find_poi(api, position[0], position[1])
 
 def find_poi(api, lat, lng):
     poi = {'pokemons': {}, 'forts': []}
-    step_size = 0.0008
-    step_limit = 49
+    step_size = 0.0005
+    step_limit = 65
     coords = generate_spiral(lat, lng, step_size, step_limit)
+    print coords
     for coord in coords:
         lat = coord['lat']
         lng = coord['lng']
-        api.set_position(lat, lng, 0)
-
-        
+        api.set_position(lat, lng, 0)     
         #get_cellid was buggy -> replaced through get_cell_ids from pokecli
         #timestamp gets computed a different way:
         cell_ids = get_cell_ids(lat, lng)
@@ -156,16 +116,20 @@ def find_poi(api, lat, lng):
                     if 'wild_pokemons' in map_cell:
                         for pokemon in map_cell['wild_pokemons']:
                             pokekey = get_key_from_pokemon(pokemon)
-                            pokemon['hides_at'] = time.time() + pokemon['time_till_hidden_ms']/1000
-                            poi['pokemons'][pokekey] = pokemon
-
-        # time.sleep(0.51)
-    # new dict, binary data
-    # print('POI dictionary: \n\r{}'.format(json.dumps(poi, indent=2)))
-    #print('POI dictionary: \n\r{}'.format(pprint.PrettyPrinter(indent=4).pformat(poi)))
-    print poi
-    print('Open this in a browser to see the path the spiral search took:')
-    print_gmaps_dbug(coords)
+                            pokemon['asset'] = ASSET_ID
+                            long_id = pokemon['longitude']
+                            lat_id = pokemon['latitude']
+                            poke_id = pokemon['pokemon_data']['pokemon_id']
+                            time_now = str(time.strftime('%Y-%m-%dT%H:%M:%S.')) + str(int(round(time.time() * 1000)))[-3:]
+                            payload = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LONGITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"0\", \"v\":\""+str(long_id)+"\"}]\n    }\n  ]\n}"
+                            time_now = str(time.strftime('%Y-%m-%dT%H:%M:%S.')) + str(int(round(time.time() * 1000)))[-3:]
+                            payload2 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LATITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"0\", \"v\":\""+str(lat_id)+"\"}]\n    }\n  ]\n}"
+                            time_now = str(time.strftime('%Y-%m-%dT%H:%M:%S.')) + str(int(round(time.time() * 1000)))[-3:]
+                            payload3 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-ID\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"0\", \"v\":\""+str(poke_id)+"\"}]\n    }\n  ]\n}"
+                            send_long = post_data(payload)
+                            send_lat = post_data(payload2)
+                            send_pokeid = post_data(payload3)
+                            print pokemon
 
 def get_key_from_pokemon(pokemon):
     return '{}-{}'.format(pokemon['spawnpoint_id'], pokemon['pokemon_data']['pokemon_id'])
