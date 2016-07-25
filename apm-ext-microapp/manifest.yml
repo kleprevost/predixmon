@@ -1,6 +1,7 @@
 ---
 applications:
-  - name: roxy-hackapm
+  - name: apm-ext-app-team26
+    host: apm-ext-app-team26
     domain: run.aws-usw02-pr.ice.predix.io
     buildpack: https://github.com/cloudfoundry/buildpack-nodejs.git
     memory: 128M

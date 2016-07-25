@@ -124,6 +124,7 @@ def find_poi(api, lat, lng):
                             send_long = post_data(payload)
                             send_lat = post_data(payload2)
                             send_pokeid = post_data(payload3)
+
                             print pokemon
 
 def get_key_from_pokemon(pokemon):

@@ -29,21 +29,25 @@ if(vcap){
   }
 }
 
-
-if(endPoints && endPoints["apm-ext-microservice-team26"]){
-  assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
+if(endPoints && endPoints["apm-ext-microservice-dev"]){
+  assetPath = endPoints["apm-ext-microservice-dev"];
+  console.log("APM_EXT_SERVICE_BASE_URL is being read from VCAP_SERVICES");
+} else {
+  console.log("APM_EXT_SERVICE_BASE_URL is not set");
+  if (process.env.AUTHTOKEN && process.env.TENANT) {
+    assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
+  } else {
+    assetPath = "http://localhost:8080/v1";
+  }
 }
-else {
-  assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
-}
 
-app.use(serveStatic('public'));
+//app.use(serveStatic('public'));
 function setCacheControl(res, path) {
     res.setHeader('Cache-Control', 'public, max-age=604800');
 }
-//app.use('/', serveStatic('public', {
-	//setHeaders: setCacheControl
-//}));
+app.use('/', serveStatic('public', {
+	setHeaders: setCacheControl
+}));
 
 // Note: If you're not running behind an app hub, you'll need to add an
 //       'Authorization' and tenant headers to any authenticated service requests.
@@ -66,7 +70,7 @@ let myHeaders = getHeaders();
 app.use('/api/*', (req, res, next) => {
   proxy({
     url: assetPath + '/*',
-    headers: myHeaders,
+    //headers: myHeaders,
     timeout: parseInt(req.headers.timeout) || 3600000
   })(req, res, next);
 });

@@ -12,4 +12,3 @@ applications:
   timeout: 180
   services:
   - apm-services
-#THE SERVICE
