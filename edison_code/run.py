@@ -12,6 +12,7 @@ import pprint
 import requests
 import datetime
 import time
+import mraa
 from pgoapi import PGoApi
 from pgoapi.utilities import f2i, h2f
 from pgoapi import utilities as util
@@ -38,7 +39,11 @@ headers = {
     'cache-control': "no-cache",
     }
 
-
+# Setup defaults for LED state
+led = mraa.Gpio(13)
+led.dir(mraa.DIR_OUT)
+led_state = 0
+led.write(led_state)
 
 def post_data(payload):
     r = requests.post(INGEST_URL, headers=headers, data=payload)
@@ -124,6 +129,9 @@ def find_poi(api, lat, lng):
                             send_long = post_data(payload)
                             send_lat = post_data(payload2)
                             send_pokeid = post_data(payload3)
+
+                            led_state = bool(led_state) ^ bool(1)
+                            led.write(led_state)
 
                             print pokemon
 
