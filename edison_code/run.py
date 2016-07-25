@@ -28,7 +28,6 @@ log = logging.getLogger(__name__)
 PTC_USERNAME = os.environ.get('PTC_USERNAME')
 PTC_PASSWORD = os.environ.get('PTC_PASSWORD')
 LOCATION = '3708 S Las Vegas Blvd, Las Vegas, NV 89109'
-ASSET_ID = 'Cosmopolitan'
 INGEST_URL = 'https://apm-timeseries-services-hackapm.run.aws-usw02-pr.ice.predix.io/v2/time_series'
 TENANT_ID = '8B8039C92C3E4EDFAB97CE576492D70C'
 headers = {
@@ -115,17 +114,17 @@ def find_poi(api, lat, lng):
                     if 'wild_pokemons' in map_cell:
                         for pokemon in map_cell['wild_pokemons']:
                             pokekey = get_key_from_pokemon(pokemon)
-                            pokemon['asset'] = ASSET_ID
                             long_id = pokemon['longitude']
                             lat_id = pokemon['latitude']
                             poke_id = pokemon['pokemon_data']['pokemon_id']
                             time_now = str(time.strftime('%Y-%m-%dT%H:%M:%S.')) + str(int(round(time.time() * 1000)))[-3:]
-                            payload = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LONGITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(long_id)+"\"}]\n    }\n  ]\n}"
-                            payload2 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LATITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(lat_id)+"\"}]\n    }\n  ]\n}"
-                            payload3 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT.POKE5-CASINO-COSMOPOLITAN-PM_UNIT-ID\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(poke_id)+"\"}]\n    }\n  ]\n}"
+                            payload = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LONGITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(long_id)+"\"}]\n    }\n  ]\n}"
+                            payload2 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT-LATITUDE\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(lat_id)+"\"}]\n    }\n  ]\n}"
+                            payload3 = "{\n  \"tags\": [\n    {\n      \"tagId\": \"POKE5-CASINO-COSMOPOLITAN-PM_UNIT-ID\",\n      \"errorCode\": null,\n      \"errorMessage\": null,\n      \"data\": [ \n          {\"ts\": \""+time_now+"\", \"q\": \"3\", \"v\":\""+str(poke_id)+"\"}]\n    }\n  ]\n}"
                             send_long = post_data(payload)
                             send_lat = post_data(payload2)
                             send_pokeid = post_data(payload3)
+
                             print pokemon
 
 def get_key_from_pokemon(pokemon):
