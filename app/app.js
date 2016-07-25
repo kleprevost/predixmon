@@ -29,16 +29,12 @@ if(vcap){
   }
 }
 
-if(endPoints && endPoints["apm-ext-microservice-dev"]){
-  assetPath = endPoints["apm-ext-microservice-dev"];
-  console.log("APM_EXT_SERVICE_BASE_URL is being read from VCAP_SERVICES");
-} else {
-  console.log("APM_EXT_SERVICE_BASE_URL is not set");
-  if (process.env.AUTHTOKEN && process.env.TENANT) {
-    assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
-  } else {
-    assetPath = "http://localhost:8080/v1";
-  }
+
+if(endPoints && endPoints["apm-ext-microservice-team26"]){
+  assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
+}
+else {
+  assetPath = "https://apm-ext-microservice-team26.run.aws-usw02-pr.ice.predix.io/v1";
 }
 
 //app.use(serveStatic('public'));
@@ -70,7 +66,7 @@ let myHeaders = getHeaders();
 app.use('/api/*', (req, res, next) => {
   proxy({
     url: assetPath + '/*',
-    //headers: myHeaders,
+    headers: myHeaders,
     timeout: parseInt(req.headers.timeout) || 3600000
   })(req, res, next);
 });
